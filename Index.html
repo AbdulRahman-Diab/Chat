@@ -54,6 +54,8 @@
             }
 
             #chatInBox {
+                position: absolute;
+               /* bottom: 0%;*/
                 height: 60px;
                 display: flex;
                 justify-content: center;
@@ -92,6 +94,7 @@
     <body>
 
         <h1 id="wepHeader">Tamkeen Messenger</h1>
+        <button id="logout">Signout</button>
 
         <div id="message-container">
 
@@ -107,6 +110,15 @@
 
 
     <script>
+
+
+        $("#logout").click(handleLogout);
+
+        function handleLogout() {
+            firebase.auth().signOut();
+            window.location.href="authentication.html";   
+        }
+
         // Initialize Firebase
         var config = {
             apiKey: "AIzaSyAcrUD5uhlB7yuaDB3bNNBFc5zHruTXmA0",
@@ -121,13 +133,13 @@
        
         function addChat(chatData) {
             console.log(chatData);
-            var chatHtml = "<div class='message'>";
-            chatHtml += "<img class='messageImg' src="+chatData.user.picture+"></img>";
-            chatHtml += "<div class='container'>";
-            chatHtml += "<div class='messageTxt'>" + chatData.message +"</div>";
-            chatHtml += "<div class='underMessageInfo'><div class='messageUsreName'>" + chatData.user.name +"</div>";
-         
-            chatHtml += "<div class='messageTime'>" + moment(chatData.time).fromNow() +"</div></div>";
+            var chatHtml = "<div class='message'>"+
+                                "<img class='messageImg' src="+chatData.user.picture+"></img>"+
+                                    "<div class='container'>"+
+                                        "<div class='messageTxt'>" + chatData.message +"</div>"+
+                                        "<div class='underMessageInfo'><div class='messageUsreName'>" + chatData.user.name +"</div>"+
+                                    "<div class='messageTime'>" + moment(chatData.time).fromNow() +
+                            "</div></div>";
 
             //chatHtml += "<div class='messageTime'>" + chatData.time +"</div></div>";
 
@@ -144,16 +156,30 @@
                 i  = i + 1;
             }
         }
+
         function addMessage() {
-            var text = $("#chat-in").val();
-            var object = {message: text, time: new Date(), user: {name: "AbdulRahman", picture: "https://scontent.faly3-1.fna.fbcdn.net/v/t1.0-9/23844526_936822306470139_2573076932762973930_n.jpg?_nc_cat=0&oh=ebcc576fca32938c11b4dbb6a59dc0b7&oe=5B50A13C"}};
-            db.collection("chats").add(object);
-            $("#chat-in").val("");
-            $("#chat-in").focus("");
+            firebase.auth().onAuthStateChanged(handleUser);
         }
+
+        function handleUser(user) {
+            if (user) {
+                var displayName = user.displayName;
+                var photoURL = user.photoURL;   
+                var text = $("#chat-in").val();
+            
+                var object = {message: text, time: new Date(), user: {name: displayName, picture: user.photoURL}};
+                db.collection("chats").add(object);
+                $("#chat-in").val("");
+                $("#chat-in").focus("");
+                
+            } else {
+
+                window.location.href = "authentication.html";
+            }
+        }
+
         db.collection("chats").orderBy("time", "desc").onSnapshot(handleDataRead);
         $("#add").click(addMessage);
-
 
         function notifyMe() {
             // Let's check if the browser supports notifications
