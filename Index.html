@@ -138,7 +138,7 @@
         function handleDataRead(chats) {
             
             while(indexOfMessage < chats.size) {
-                var data = chats.docs[i].data();
+                var data = chats.docs[indexOfMessage].data();
                 addChat(data);
                 notifyMe (data.user.name+': '+data.message);
                 indexOfMessage ++;
