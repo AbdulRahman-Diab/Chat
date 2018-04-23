@@ -147,13 +147,16 @@
 
             $("#message-container").append(chatHtml);
         }
+        
+
+        var indexOfMessage = 0;
         function handleDataRead(chats) {
-            $(".message").remove();
-            var i = 0;
-            while(i < chats.size) {
+            
+            while(indexOfMessage < chats.size) {
                 var data = chats.docs[i].data();
                 addChat(data);
-                i  = i + 1;
+                notifyMe (data.user.name+': '+data.message);
+                indexOfMessage ++;
             }
         }
 
@@ -178,10 +181,7 @@
             }
         }
 
-        db.collection("chats").orderBy("time", "desc").onSnapshot(handleDataRead);
-        $("#add").click(addMessage);
-
-        function notifyMe() {
+        function notifyMe (notifyMessage) {
             // Let's check if the browser supports notifications
             if (!("Notification" in window)) {
                 alert("This browser does not support desktop notification");
@@ -190,7 +190,7 @@
             // Let's check whether notification permissions have already been granted
             else if (Notification.permission === "granted") {
                 // If it's okay let's create a notification
-                var notification = new Notification("Hi there!");
+                var notification = new Notification(notifyMessage);
             }
 
             // Otherwise, we need to ask the user for permission
@@ -198,13 +198,20 @@
                 Notification.requestPermission(function (permission) {
                 // If the user accepts, let's create a notification
                 if (permission === "granted") {
-                    var notification = new Notification("Hi there!");
+                    var notification = new Notification(notifyMessage);
                 }
                 });
             }
 
             // At last, if the user has denied notifications, and you 
             // want to be respectful there is no need to bother them any more.
-            }
+        }
+
+
+        db.collection("chats").orderBy("time", "desc").onSnapshot(handleDataRead);
+        $("#add").click(addMessage);
+
+
+
     </script>
 </html>
