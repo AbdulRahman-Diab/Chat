@@ -19,12 +19,10 @@
                 justify-content: center;
                 color: #444;
             }
-
             #message-container {
                 width: 100%;
                 margin-bottom: 10px;
             }
-
             .message {
                 display: flex;
                 padding: 10px;
@@ -39,7 +37,6 @@
                 border-radius: 15px;
                 font-size: 20px;
             }
-
             .underMessageInfo {
                 display: flex;
                 justify-content: space-between;
@@ -52,7 +49,6 @@
                 margin-right: 10px;
                 font-size: 15px;
             }
-
             #chatInBox {
                 position: absolute;
                /* bottom: 0%;*/
@@ -61,7 +57,6 @@
                 justify-content: center;
                 
             }
-
             #chat-in {
                 border-radius: 15px;
                 font-size: 20px;
@@ -73,13 +68,11 @@
                 background-color: #eee;
                 border-color: #999;
             }
-
             #add {
                 border-radius: 10px;
                 font-size: 16px;
                 margin: 10px; 
             }
-
             .messageImg {
                 width: 75px;
                 height: 75px;
@@ -110,15 +103,11 @@
 
 
     <script>
-
-
         $("#logout").click(handleLogout);
-
         function handleLogout() {
             firebase.auth().signOut();
             window.location.href="authentication.html";   
         }
-
         // Initialize Firebase
         var config = {
             apiKey: "AIzaSyAcrUD5uhlB7yuaDB3bNNBFc5zHruTXmA0",
@@ -140,27 +129,24 @@
                                         "<div class='underMessageInfo'><div class='messageUsreName'>" + chatData.user.name +"</div>"+
                                     "<div class='messageTime'>" + moment(chatData.time).fromNow() +
                             "</div></div>";
-
             //chatHtml += "<div class='messageTime'>" + chatData.time +"</div></div>";
-
             chatHtml += "</div></div>";
-
             $("#message-container").append(chatHtml);
         }
+        
+        var indexOfMessage = 0;
         function handleDataRead(chats) {
-            $(".message").remove();
-            var i = 0;
-            while(i < chats.size) {
+            
+            while(indexOfMessage < chats.size) {
                 var data = chats.docs[i].data();
                 addChat(data);
-                i  = i + 1;
+                notifyMe (data.user.name+': '+data.message);
+                indexOfMessage ++;
             }
         }
-
         function addMessage() {
             firebase.auth().onAuthStateChanged(handleUser);
         }
-
         function handleUser(user) {
             if (user) {
                 var displayName = user.displayName;
@@ -173,38 +159,32 @@
                 $("#chat-in").focus("");
                 
             } else {
-
                 window.location.href = "authentication.html";
             }
         }
-
-        db.collection("chats").orderBy("time", "desc").onSnapshot(handleDataRead);
-        $("#add").click(addMessage);
-
-        function notifyMe() {
+        function notifyMe (notifyMessage) {
             // Let's check if the browser supports notifications
             if (!("Notification" in window)) {
                 alert("This browser does not support desktop notification");
             }
-
             // Let's check whether notification permissions have already been granted
             else if (Notification.permission === "granted") {
                 // If it's okay let's create a notification
-                var notification = new Notification("Hi there!");
+                var notification = new Notification(notifyMessage);
             }
-
             // Otherwise, we need to ask the user for permission
             else if (Notification.permission !== "denied") {
                 Notification.requestPermission(function (permission) {
                 // If the user accepts, let's create a notification
                 if (permission === "granted") {
-                    var notification = new Notification("Hi there!");
+                    var notification = new Notification(notifyMessage);
                 }
                 });
             }
-
             // At last, if the user has denied notifications, and you 
             // want to be respectful there is no need to bother them any more.
-            }
+        }
+        db.collection("chats").orderBy("time", "desc").onSnapshot(handleDataRead);
+        $("#add").click(addMessage);
     </script>
 </html>
